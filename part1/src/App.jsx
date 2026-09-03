@@ -8,7 +8,7 @@ const Content = ({ content }) => {
   return (
     <div>
       {content.map((part) => (
-        <p key={part.name}>{part.name}</p>
+        <p key={part.name}>{part.name}, {part.count} </p>
       ))}
     </div>
   );
@@ -24,9 +24,9 @@ const App = () => {
   const exercises2 = 7;
   const exercises3 = 14;
   const parts = [
-    { name: "Fundamentals of React" },
-    { name: "Using props to pass data" },
-    { name: "State of a component" },
+    { name: "Fundamentals of React", count: exercises1 },
+    { name: "Using props to pass data", count: exercises2 },
+    { name: "State of a component", count: exercises3},
   ];
   return (
     <div>
