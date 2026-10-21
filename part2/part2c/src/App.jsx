@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import Note from "./components/Note";
+import Notification from "./components/Notification";
 import noteService from "./services/notes";
 import personService from "./services/persons";
+import "./css/index.css";
 const Filter = ({ filter, setFilter }) => {
   return (
     <div>
@@ -56,15 +58,28 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [infoMessage, setInfoMessage] = useState(null);
 
   const handleDelete = (id) => {
     const person = persons.find((person) => person.id === id);
     if (!window.confirm(`Delete ${person.name}?`)) {
       return;
     }
-    personService.remove(id).then(() => {
-      setPersons(persons.filter((p) => p.id !== id));
-    });
+    personService
+      .remove(id)
+      .then(() => {
+        setPersons(persons.filter((p) => p.id !== id));
+      })
+      .catch(() => {
+        setErrorMessage(
+          `${person.name} has already been removed from the server`,
+        );
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
+        setPersons(persons.filter((p) => p.id !== id));
+      });
   };
 
   useEffect(() => {
@@ -107,6 +122,19 @@ const App = () => {
           );
           setNewName("");
           setNewNumber("");
+          setInfoMessage(`Changed number of ${returnedPerson.name}`);
+          setTimeout(() => {
+            setInfoMessage(null);
+          }, 5000);
+        })
+        .catch(() => {
+          setErrorMessage(
+            `Information of ${existingPerson.name} has already been removed from server`,
+          );
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+          setPersons(persons.filter((p) => p.id !== existingPerson.id));
         });
       return;
     }
@@ -115,6 +143,10 @@ const App = () => {
       setPersons(persons.concat(returnedPerson));
       setNewNumber("");
       setNewName("");
+      setInfoMessage(`${returnedPerson.name} was added to the list.`);
+      setTimeout(() => {
+        setInfoMessage(null);
+      }, 5000);
     });
   };
 
@@ -130,8 +162,11 @@ const App = () => {
       .then((returnedNote) => {
         setNotes(notes.map((note) => (note.id === id ? returnedNote : note)));
       })
-      .catch((error) => {
-        alert(`the note '${note.content}' was already deleted from server`);
+      .catch(() => {
+        setErrorMessage(`Note ${note.content} was already removed from server`);
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
         setNotes(notes.filter((n) => n.id !== id));
       });
   };
@@ -139,6 +174,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage} type="error" />
+      <Notification message={infoMessage} type="info" />
       <Filter filter={filter} setFilter={setFilter} />
 
       <h3>Add a new</h3>
